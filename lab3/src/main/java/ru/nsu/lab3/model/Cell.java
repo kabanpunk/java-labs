@@ -1,48 +1,54 @@
 package ru.nsu.lab3.model;
 
-
 public class Cell {
-    public boolean isMined() {
-        return isMined;
-    }
 
-    public void setMined(boolean mined) {
-        isMined = mined;
-    }
 
-    private boolean isMined;
-    private final int line;
-    private final int row;
+
     private int adjacentMines;
-    private CellStatus status = CellStatus.HIDE;
-    private Game game;
+    private boolean hidden;
+    private boolean mined;
+    private boolean opened;
+    private boolean flagged;
 
-    public Cell(Game game, int line, int row) {
-        this.line = line;
-        this.row = row;
-        this.game = game;
+
+    public Cell() {
+        hidden = true;
     }
 
     public String getString() {
-        if (isMined)
+        if (isMined())
             return "M";
         return Integer.toString(adjacentMines);
     }
 
-    public void uncover(int line, int row) {
-        if (status == CellStatus.HIDE) {
-            status = CellStatus.REVEALED;
-            if (isMined)
-                game.lose();
-        }
+
+
+    public void open() {
+        opened = true;
     }
 
-    public int getLine() {
-        return line;
+    public boolean isOpen() {
+        return opened;
     }
 
-    public int getRow() {
-        return row;
+    public boolean isFlagged() {
+        return flagged;
+    }
+
+    public boolean isMined() {
+        return mined;
+    }
+
+    public void setMined() {
+        mined = true;
+    }
+
+    public void setFlag() {
+        flagged = true;
+    }
+
+    public void removeFlag() {
+        flagged = false;
     }
 
     public void incrementAdjacentMines() {
@@ -53,11 +59,17 @@ public class Cell {
         return adjacentMines;
     }
 
-    public CellStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(CellStatus status) {
-        this.status = status;
+    @Override
+    public String toString() {
+        if (isMined()) {
+            return "B"; //💣
+        }
+        else if (isFlagged()) {
+            return "F"; //🚩
+        }
+        else if (isOpen()) {
+            return Integer.toString(adjacentMines);
+        }
+        return " ";
     }
 }

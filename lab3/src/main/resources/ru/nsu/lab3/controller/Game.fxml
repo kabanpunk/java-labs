@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.nsu.lab3.controller.GameController">
+    <children>
+        <GridPane fx:id="gridPane" prefHeight="341.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints maxHeight="50.0" minHeight="50.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="291.0" minHeight="0.0" prefHeight="291.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <StackPane fx:id="controlPane" maxHeight="50.0" minHeight="50.0" prefHeight="50.0">
+                    <children>
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                            <children>
+                                <Button fx:id="newGameButton" alignment="CENTER" mnemonicParsing="false" text="New Game">
+                                    <HBox.margin>
+                                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                                    </HBox.margin>
+                           <font>
+                              <Font name="Adrenaline : Zero" size="20.0" />
+                           </font>
+                           <textFill>
+                              <LinearGradient endX="1.0" endY="1.0" startX="1.0">
+                                 <stops>
+                                    <Stop>
+                                       <color>
+                                          <Color red="1.0" />
+                                       </color>
+                                    </Stop>
+                                    <Stop offset="1.0">
+                                       <color>
+                                          <Color />
+                                       </color>
+                                    </Stop>
+                                 </stops>
+                              </LinearGradient>
+                           </textFill></Button>
+                            </children>
+                        </HBox>
+                    </children>
+                </StackPane>
+                <Pane fx:id="boardPane" GridPane.rowIndex="1">
+                    <GridPane.margin>
+                        <Insets />
+                    </GridPane.margin></Pane>
+            </children>
+        </GridPane>
+    </children>
+</AnchorPane>
