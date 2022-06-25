@@ -1,11 +1,11 @@
-package com.company;
+package ru.lab1;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import static com.company.Settings.WORD_SEPARATOR;
+import static ru.lab1.Settings.WORD_SEPARATOR;
 
 public class InputFileReader implements AutoCloseable{
     private final Scanner scanner;

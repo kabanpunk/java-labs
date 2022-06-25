@@ -1,10 +1,10 @@
-package com.company;
+package ru.lab1;
 
 import java.io.FileWriter;
 import java.util.List;
 import java.util.Map;
 
-import static com.company.Settings.TABLE_VALUE_SEPARATOR;
+import static ru.lab1.Settings.TABLE_VALUE_SEPARATOR;
 
 public class CsvFileWriter implements AutoCloseable {
     private final FileWriter writer;

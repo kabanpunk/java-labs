@@ -1,12 +1,12 @@
-package com.company;
+package ru.lab1;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.company.Settings.INPUT_FILE;
-import static com.company.Settings.OUTPUT_FILE;
+import static ru.lab1.Settings.INPUT_FILE;
+import static ru.lab1.Settings.OUTPUT_FILE;
 
 public class Main {
 

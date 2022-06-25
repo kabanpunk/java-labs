@@ -1,4 +1,4 @@
-package com.company;
+package ru.lab1;
 
 public class Settings {
     public static final int INPUT_FILE = 0;
