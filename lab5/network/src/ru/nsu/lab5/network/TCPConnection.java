@@ -2,6 +2,7 @@ package ru.nsu.lab5.network;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -9,8 +10,9 @@ public class TCPConnection {
     private final Socket socket;
     private final Thread rxThread;
     private final TCPConnectionListener eventListener;
-    private final BufferedReader in;
-    private final BufferedWriter out;
+    private final ObjectOutputStream out;
+    private final ObjectInputStream in;
+
 
     public TCPConnection(TCPConnectionListener eventListener, String ipAddr, int port) throws IOException {
         this(eventListener, new Socket(ipAddr, port));
@@ -19,8 +21,9 @@ public class TCPConnection {
     public TCPConnection(TCPConnectionListener eventListener, Socket socket) throws IOException {
         this.eventListener = eventListener;
         this.socket = socket;
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+        this.out = new ObjectOutputStream(socket.getOutputStream());
+        this.in = new ObjectInputStream(socket.getInputStream());
+
 
         rxThread = new Thread(new Runnable() {
             @Override
@@ -28,13 +31,14 @@ public class TCPConnection {
                 try {
                     eventListener.onConnectionReady(TCPConnection.this);
                     while (!rxThread.isInterrupted()) {
-                        eventListener.onReceiveString(TCPConnection.this, in.readLine());
+                        eventListener.onReceiveString(TCPConnection.this, in.readObject());
                     }
                 }
                 catch (IOException e) {
-                    eventListener.onException(TCPConnection.this, e);
-                }
-                finally {
+                    //eventListener.onException(TCPConnection.this, e);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                } finally {
                     eventListener.onDisconnect(TCPConnection.this);
                 }
 
@@ -43,9 +47,20 @@ public class TCPConnection {
         rxThread.start();
     }
 
-    public synchronized void sendString(String value) {
+    public synchronized void send(String value) {
         try {
-            out.write(value + "\r\n");
+            out.writeObject(value + "\r\n");
+            out.flush();
+        }
+        catch (IOException e) {
+            eventListener.onException(TCPConnection.this, e);
+            disconnect();
+        }
+    }
+
+    public synchronized void send(Message message) {
+        try {
+            out.writeObject(message);
             out.flush();
         }
         catch (IOException e) {
