@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static java.lang.Math.abs;
 import static ru.nsu.lab3.model.GameState.*;
 
 public class Board {
@@ -13,6 +15,8 @@ public class Board {
     private int numberOfMines;
     private boolean isMinesGenerated;
     private GameState gameState;
+    private long startTime;
+    private long endTime;
 
     public static Pair<Integer, Integer>[] permutations = new Pair[]{
             new Pair<>(-1, -1),
@@ -70,6 +74,7 @@ public class Board {
     public void openCell(int y, int x) {
         if (!isMinesGenerated) {
             generateRandomMines(y, x);
+            startTime = System.currentTimeMillis();
         }
         System.out.println(this);
 
@@ -78,6 +83,7 @@ public class Board {
             System.out.println(this);
             if (cells[y][x].isMined()) {
                 gameState = LOSE;
+                endTime = System.currentTimeMillis();
                 openMines();
             }
             else {
@@ -141,6 +147,8 @@ public class Board {
                 }
             }
         }
+        endTime = System.currentTimeMillis();
+        gameState = WON;
         return true;
     }
 
@@ -183,6 +191,10 @@ public class Board {
         return gameState == INPROGRESS;
     }
 
+    public GameState getGameState() {
+        return gameState;
+    }
+
     public void flagCell(int y, int x) {
         if (cells[y][x].isFlagged()) {
             cells[y][x].removeFlag();
@@ -195,5 +207,20 @@ public class Board {
 
     public Cell getCell(int y, int x) {
         return cells[y][x];
+    }
+
+    public double getScore() {
+        if (gameState != INPROGRESS) {
+            return round((double) numberOfBoardLines * numberOfBoardRows / abs((numberOfBoardLines * numberOfBoardRows - 1) / 2 - numberOfMines) / 2. / ((endTime - startTime) / 1000.), 2);
+        }
+        return 0.;
+    }
+    private static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
 }

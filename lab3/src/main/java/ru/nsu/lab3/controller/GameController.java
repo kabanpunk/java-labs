@@ -16,6 +16,12 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import ru.nsu.lab3.model.Board;
 import ru.nsu.lab3.model.Cell;
+import ru.nsu.lab3.model.GameState;
+
+import java.io.*;
+import java.util.HashMap;
+
+import static ru.nsu.lab3.controller.Config.STATS_PATH;
 import static ru.nsu.lab3.controller.Consts.CELL_SIZE;
 import static ru.nsu.lab3.controller.Consts.*;
 
@@ -29,7 +35,7 @@ public class GameController {
 
     private Board board;
 
-    public void initGame(int numberOfBoardLines, int numberOfBoardRows, int numberOfMines) {
+    public void initGame(String userName, Stats stats, int numberOfBoardLines, int numberOfBoardRows, int numberOfMines) {
         boardPane.getChildren().clear();
 
         boardPane.setPrefHeight(numberOfBoardLines * CELL_SIZE);
@@ -40,7 +46,6 @@ public class GameController {
 
         board = new Board(numberOfBoardLines, numberOfBoardRows, numberOfMines);
 
-        int tmp = board.getNumberOfLines();
         for (int i = 0; i < board.getNumberOfLines(); i++) {
             for (int j = 0; j < board.getNumberOfRows(); j++) {
                 Pane cell = new Pane( );
@@ -66,6 +71,23 @@ public class GameController {
                             );
                         }
                         draw();
+                        board.checkVictory();
+
+                        if (!board.isGameInProcess()) {
+                            Alert alert;
+                            double scoreValue = board.getScore();
+                            stats.addUserScore(userName, scoreValue);
+
+                            if (board.getGameState() == GameState.WON) {
+                                alert = new Alert(Alert.AlertType.NONE, "You Won! SCORE: " + scoreValue, ButtonType.OK);
+                            }
+                            else {
+                                alert = new Alert(Alert.AlertType.NONE, "You Loose. SCORE: " + scoreValue, ButtonType.OK);
+                            }
+
+                            stats.writeStats();
+                            alert.show();
+                        }
                     }
                 });
 
@@ -75,8 +97,6 @@ public class GameController {
             }
         }
     }
-
-
 
     public void draw() {
         for (int y = 0; y < board.getNumberOfLines(); y++) {
@@ -109,11 +129,6 @@ public class GameController {
                 }
             }
         }
-
-        if (board.checkVictory()) {
-            Alert winAlert = new Alert(Alert.AlertType.NONE, "You Won!", ButtonType.OK);
-            winAlert.show();
-        }
     }
 
     private void setCellPaneTexture(Pane cellPane, Image image) {
@@ -122,6 +137,8 @@ public class GameController {
         imageView.setFitHeight(CELL_SIZE);
         cellPane.getChildren().add(imageView);
     }
+
+
 
 
 }
