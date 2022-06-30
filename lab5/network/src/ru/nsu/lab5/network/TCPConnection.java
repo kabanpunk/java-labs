@@ -2,28 +2,27 @@ package ru.nsu.lab5.network;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 public class TCPConnection {
     private final Socket socket;
     private final Thread rxThread;
     private final TCPConnectionListener eventListener;
-    private final ObjectOutputStream out;
-    private final ObjectInputStream in;
+    private final BufferedReader in;
+    private final BufferedWriter out;
 
+    private final SerializationMode serializationMode;
 
-    public TCPConnection(TCPConnectionListener eventListener, String ipAddr, int port) throws IOException {
+    public TCPConnection(TCPConnectionListener eventListener, String ipAddr, int port, SerializationMode serializationMode) throws IOException {
         this(eventListener, new Socket(ipAddr, port));
     }
 
-    public TCPConnection(TCPConnectionListener eventListener, Socket socket) throws IOException {
+    public TCPConnection(TCPConnectionListener eventListener, Socket socket, SerializationMode serializationMode) throws IOException {
         this.eventListener = eventListener;
         this.socket = socket;
-        this.out = new ObjectOutputStream(socket.getOutputStream());
-        this.in = new ObjectInputStream(socket.getInputStream());
-
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
 
         rxThread = new Thread(new Runnable() {
             @Override
@@ -31,14 +30,13 @@ public class TCPConnection {
                 try {
                     eventListener.onConnectionReady(TCPConnection.this);
                     while (!rxThread.isInterrupted()) {
-                        eventListener.onReceiveString(TCPConnection.this, in.readObject());
+                        eventListener.onReceiveString(TCPConnection.this, in.readLine());
                     }
                 }
                 catch (IOException e) {
-                    //eventListener.onException(TCPConnection.this, e);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                } finally {
+                    eventListener.onException(TCPConnection.this, e);
+                }
+                finally {
                     eventListener.onDisconnect(TCPConnection.this);
                 }
 
@@ -47,9 +45,9 @@ public class TCPConnection {
         rxThread.start();
     }
 
-    public synchronized void send(String value) {
+    public synchronized void sendString(String value) {
         try {
-            out.writeObject(value + "\r\n");
+            out.write(value + "\r\n");
             out.flush();
         }
         catch (IOException e) {
@@ -58,9 +56,14 @@ public class TCPConnection {
         }
     }
 
-    public synchronized void send(Message message) {
+    public synchronized void sendMessage(Message msg) {
         try {
-            out.writeObject(message);
+            switch (msg.getSerializationMode()) {
+                case JSON_SERIALIZATION -> out.write(msg.getJson());
+                case DEFAULT_SERIALIZTION -> out.write(msg.getString());
+                default -> throw new IllegalStateException("Unexpected value: " + msg.getSerializationMode());
+            }
+            //out.write( "\r\n");
             out.flush();
         }
         catch (IOException e) {
@@ -76,6 +79,36 @@ public class TCPConnection {
         }
         catch (IOException e) {
             eventListener.onException(TCPConnection.this, e);
+        }
+    }
+
+    public String serialize() throws IOException {
+        switch (getSerializationMode()) {
+            case JSON_SERIALIZATION:
+                return gson.toJson(this);
+            case DEFAULT_SERIALIZTION:
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream( baos );
+                oos.writeObject( this );
+                oos.close();
+                return Base64.getEncoder().encodeToString(baos.toByteArray());
+            default:
+                return "";
+        }
+    }
+
+    public String deserialize(String data) throws IOException {
+        switch (getSerializationMode()) {
+            case JSON_SERIALIZATION:
+                return gson.toJson(this);
+            case DEFAULT_SERIALIZTION:
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream( baos );
+                oos.writeObject( this );
+                oos.close();
+                return Base64.getEncoder().encodeToString(baos.toByteArray());
+            default:
+                return "";
         }
     }
 
